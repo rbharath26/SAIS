@@ -1,0 +1,187 @@
+{
+  "dataset": "vendor\\wmt-mqm-human-evaluation\\generalMT2022\\ende\\mqm_generalMT2022_ende.avg_seg_scores.tsv",
+  "dataset_description": "WMT22 expert MQM average segment scores",
+  "evaluation_scope": "complete_dataset",
+  "human_score_transform": "raw MQM score; negative error penalties, higher is better",
+  "systems": 15,
+  "metrics": {
+    "bleu": {
+      "segment_level_correlation": {
+        "observations": 19725,
+        "pearson": 0.19868150335381257,
+        "spearman": 0.22805879460882547
+      },
+      "system_level_correlation": {
+        "observations": 15,
+        "pearson": 0.6317947150781169,
+        "spearman": 0.457142857142857
+      },
+      "system_scores": {
+        "JDExploreAcademy": {
+          "segments": 1315,
+          "metric_mean": 0.3708703226744832,
+          "human_quality_mean": -1.0469961977186313
+        },
+        "Lan-Bridge": {
+          "segments": 1315,
+          "metric_mean": 0.3592901333095043,
+          "human_quality_mean": -1.4101140684410647
+        },
+        "M2M100_1.2B-B4": {
+          "segments": 1315,
+          "metric_mean": 0.286670757573115,
+          "human_quality_mean": -2.819087452471483
+        },
+        "Online-A": {
+          "segments": 1315,
+          "metric_mean": 0.35614073805612745,
+          "human_quality_mean": -1.2130038022813687
+        },
+        "Online-B": {
+          "segments": 1315,
+          "metric_mean": 0.37279294991534057,
+          "human_quality_mean": -1.0357414448669202
+        },
+        "Online-G": {
+          "segments": 1315,
+          "metric_mean": 0.3503740796333854,
+          "human_quality_mean": -1.2242585551330798
+        },
+        "Online-W": {
+          "segments": 1315,
+          "metric_mean": 0.364823958364455,
+          "human_quality_mean": -0.7885171102661597
+        },
+        "Online-Y": {
+          "segments": 1315,
+          "metric_mean": 0.3482084157426549,
+          "human_quality_mean": -1.2977186311787072
+        },
+        "OpenNMT": {
+          "segments": 1315,
+          "metric_mean": 0.3456233861783944,
+          "human_quality_mean": -1.6756653992395438
+        },
+        "PROMT": {
+          "segments": 1315,
+          "metric_mean": 0.3515018641550778,
+          "human_quality_mean": -1.7558174904942965
+        },
+        "QUARTZ_TuneReranking": {
+          "segments": 1315,
+          "metric_mean": 0.32273527659522017,
+          "human_quality_mean": -1.3444866920152092
+        },
+        "bleu_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.3745211802874125,
+          "human_quality_mean": -0.9601520912547529
+        },
+        "bleurt_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.3189725300387311,
+          "human_quality_mean": -1.1107984790874526
+        },
+        "comet_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.32392311583111216,
+          "human_quality_mean": -1.0818250950570343
+        },
+        "refB": {
+          "segments": 1315,
+          "metric_mean": 0.3334069901094466,
+          "human_quality_mean": -0.9137642585551331
+        }
+      }
+    },
+    "rougeL": {
+      "segment_level_correlation": {
+        "observations": 19725,
+        "pearson": 0.22694511909432816,
+        "spearman": 0.25818989529876685
+      },
+      "system_level_correlation": {
+        "observations": 15,
+        "pearson": 0.7116493218990096,
+        "spearman": 0.5
+      },
+      "system_scores": {
+        "JDExploreAcademy": {
+          "segments": 1315,
+          "metric_mean": 0.6342784680180962,
+          "human_quality_mean": -1.0469961977186313
+        },
+        "Lan-Bridge": {
+          "segments": 1315,
+          "metric_mean": 0.6325542151514613,
+          "human_quality_mean": -1.4101140684410647
+        },
+        "M2M100_1.2B-B4": {
+          "segments": 1315,
+          "metric_mean": 0.5512004465066712,
+          "human_quality_mean": -2.819087452471483
+        },
+        "Online-A": {
+          "segments": 1315,
+          "metric_mean": 0.6280280847908344,
+          "human_quality_mean": -1.2130038022813687
+        },
+        "Online-B": {
+          "segments": 1315,
+          "metric_mean": 0.6324645939954937,
+          "human_quality_mean": -1.0357414448669202
+        },
+        "Online-G": {
+          "segments": 1315,
+          "metric_mean": 0.6270973024655674,
+          "human_quality_mean": -1.2242585551330798
+        },
+        "Online-W": {
+          "segments": 1315,
+          "metric_mean": 0.6396531737180239,
+          "human_quality_mean": -0.7885171102661597
+        },
+        "Online-Y": {
+          "segments": 1315,
+          "metric_mean": 0.6123442049363435,
+          "human_quality_mean": -1.2977186311787072
+        },
+        "OpenNMT": {
+          "segments": 1315,
+          "metric_mean": 0.6008159826823161,
+          "human_quality_mean": -1.6756653992395438
+        },
+        "PROMT": {
+          "segments": 1315,
+          "metric_mean": 0.6114379922207958,
+          "human_quality_mean": -1.7558174904942965
+        },
+        "QUARTZ_TuneReranking": {
+          "segments": 1315,
+          "metric_mean": 0.5939873060718525,
+          "human_quality_mean": -1.3444866920152092
+        },
+        "bleu_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.6389877313284303,
+          "human_quality_mean": -0.9601520912547529
+        },
+        "bleurt_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.5908086593093155,
+          "human_quality_mean": -1.1107984790874526
+        },
+        "comet_bestmbr": {
+          "segments": 1315,
+          "metric_mean": 0.6017060900429679,
+          "human_quality_mean": -1.0818250950570343
+        },
+        "refB": {
+          "segments": 1315,
+          "metric_mean": 0.5956612152333798,
+          "human_quality_mean": -0.9137642585551331
+        }
+      }
+    }
+  }
+}

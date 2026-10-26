@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use SAIS, please cite it using this metadata."
+title: "SAIS: Semantic Anchor & Intent Score"
+version: 0.1.0
+date-released: 2026-10-24
+authors:
+  - family-names: Raghavan
+    given-names: Bharath
+license: LicenseRef-SAIS-Commercial
+abstract: "A fact-aware, structure-aware reference-based metric for evaluating generated text."

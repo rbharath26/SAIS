@@ -1,0 +1,219 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,booktabs,hyperref}
+\usepackage[numbers]{natbib}
+\hypersetup{colorlinks=true,citecolor=blue,urlcolor=blue}
+
+\title{SAIS: Semantic Anchor \& Intent Score\\
+\large A Fact-Aware, Structure-Aware Metric for Reference-Based Evaluation of Generated Text}
+\author{Bharath Raghavan\\Independent Researcher}
+\date{October 24, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Automatic metrics for generated text commonly emphasize lexical overlap or
+semantic similarity, leaving factual completeness, unsupported factual
+additions, structural ordering, and explicit requirements only indirectly
+represented. This paper introduces the \emph{Semantic Anchor \& Intent Score}
+(SAIS), a reference-based metric that combines a normalized embedding-based
+meaning score, idea-block sequence alignment, a fact-level $F_\beta$ score,
+an explicit constraint gate, and a symmetric length-ratio penalty. The design
+makes factual and constraint failures multiplicative rather than compensable by
+surface-level semantic similarity. We specify the metric, its implementation
+interface, diagnostics, and a reproducible protocol for validation against
+human judgments. SAIS is proposed as an evaluation framework; empirical
+correlations are intentionally not claimed until they are measured on released,
+human-scored benchmarks.
+\end{abstract}
+
+\section{Introduction}
+
+The quality of a language-model response cannot be reduced to shared words.
+Two valid responses may use different wording, while a fluent response may
+silently omit a date, reverse a causal relation, introduce an unsupported
+number, or violate a mandatory instruction. These failure modes are especially
+important for summarization, question answering, and constrained generation.
+
+BLEU~\citep{papineni2002bleu} measures modified $n$-gram precision with a
+brevity penalty. ROUGE~\citep{lin2004rouge} measures overlap with a reference
+and is widely used for summarization. Both are useful and inexpensive, but
+their lexical basis can under-credit paraphrase and does not directly define
+fact-level correctness. BERTScore~\citep{zhang2020bertscore} uses contextual
+token embeddings and better captures semantic relatedness, but similarity alone
+is not a sufficient test for required facts or explicit hard constraints.
+
+SAIS is not proposed as a replacement for human evaluation. It makes the
+evaluative assumptions explicit and returns component diagnostics, allowing
+users to investigate a low score rather than treating it as an opaque label.
+
+\section{Problem Definition}
+
+Let $C$ be candidate text, $R$ a human-authored reference, and
+$E_R,E_C$ the respective sets of salient facts. A fact may be a date, number,
+named entity, identifier, or curated domain assertion. Let $\mathcal{K}$ be a
+list of explicit constraints, such as a required statement, forbidden
+disclosure, or formatting rule. SAIS returns a score in $[0,1]$ and a
+diagnostic report containing matched facts, missing facts, candidate-only facts,
+and constraint violations.
+
+\section{The SAIS Formulation}
+
+The overall score is
+\begin{equation}
+\operatorname{SAIS}(C,R)=
+[\alpha S_{\mathrm{mesh}}(C,R)+(1-\alpha)S_{\mathrm{logic}}(C,R)]
+S_{\mathrm{fact}}(C,R)\Gamma(C;\mathcal{K})BP(C,R),
+\label{eq:sais}
+\end{equation}
+where $\alpha\in[0,1]$. Each factor is constrained to $[0,1]$. The
+multiplicative terms reflect the intended policy: a candidate with a material
+factual or hard-constraint failure should not receive a high final score merely
+because its phrasing is semantically similar to the reference.
+
+\subsection{Meaning Mesh}
+
+Let $u=\operatorname{Embed}(C)$ and $v=\operatorname{Embed}(R)$ be normalized
+sentence-level embeddings, for example from Sentence-BERT~\citep{reimers2019sentencebert}.
+Because cosine similarity lies in $[-1,1]$, SAIS maps it to the unit interval:
+\begin{equation}
+S_{\mathrm{mesh}}(C,R)=\frac{1+\cos(u,v)}{2}.
+\end{equation}
+This component recognizes semantically equivalent paraphrases but is
+deliberately insufficient on its own to establish factual faithfulness.
+
+\subsection{Logic Flow}
+
+The candidate and reference are segmented into ordered idea blocks
+$B_C=(b_1,\ldots,b_m)$ and $B_R=(r_1,\ldots,r_n)$. For a block pair, let
+$s(b_i,r_j)\in[0,1]$ be the normalized embedding cosine. Its position-aware
+weight is
+\begin{equation}
+\omega(i,j)=\exp\left[-\lambda\left|\frac{i}{m}-\frac{j}{n}\right|\right],
+\quad \lambda\geq0.
+\end{equation}
+The directional reference-coverage logic score is
+\begin{equation}
+S_{\mathrm{logic}}(C,R)=\frac{1}{n}\sum_{j=1}^{n}
+\max_{i\in\{1,\ldots,m\}}\left[s(b_i,r_j)\omega(i,j)\right].
+\label{eq:logic}
+\end{equation}
+Normalized positions are important: they compare relative location rather than
+assuming the candidate and reference have identical numbers of blocks.
+Production deployments may replace sentence segmentation with discourse or
+proposition segmentation.
+
+\subsection{Fact Anchor}
+
+Facts require canonical comparison rather than raw string equality. The
+canonicalization function normalizes case and whitespace, parses supported
+dates (for example, ``October 24, 2026'' and ``2026-10-24''), normalizes
+numbers, and may apply a domain-maintained alias table. Matches are one-to-one
+to prevent duplicate credit.
+
+Let $M=|E_R\cap_{\mathrm{canon}}E_C|$. Fact recall and precision are
+\begin{equation}
+R_{\mathrm{fact}}=\frac{M}{\max(|E_R|,1)},\qquad
+P_{\mathrm{fact}}=\frac{M}{\max(|E_C|,1)}.
+\end{equation}
+SAIS uses the balanced $F_\beta$ form
+\begin{equation}
+S_{\mathrm{fact}}=
+\begin{cases}
+1, & |E_R|=|E_C|=0,\\
+\frac{(1+\beta_f^2)P_{\mathrm{fact}}R_{\mathrm{fact}}}
+{\beta_f^2P_{\mathrm{fact}}+R_{\mathrm{fact}}}, & \text{otherwise},
+\end{cases}
+\end{equation}
+with the score defined as zero if its second-case denominator is zero.
+Recall penalizes omitted facts, while precision penalizes extracted
+candidate-only facts. Automatic named entity recognition can supply a
+baseline set, but curated required facts are recommended for high-stakes use.
+
+\subsection{Constraint Gate}
+
+Facts are not a substitute for requirements. Each constraint $k\in\mathcal K$
+has a validation predicate and a failure factor $\gamma_k\in[0,1]$. The gate is
+\begin{equation}
+\Gamma(C;\mathcal K)=\prod_{k:\operatorname{violated}(C,k)}\gamma_k.
+\end{equation}
+A hard safety or disclosure violation uses $\gamma_k=0$; a soft discrepancy
+can use a factor such as $0.5$. The implementation supports required and
+forbidden literal or regular-expression constraints. Domain systems should add
+typed validators for structured requirements.
+
+\subsection{Symmetric Length Penalty}
+
+Let $|T|$ be the word count of text $T$. The penalty is
+\begin{equation}
+BP(C,R)=
+\begin{cases}
+1, & |C|=|R|=0,\\
+0, & |C|=0<|R|,\\
+\exp\left(-\beta_\ell\left|\log
+\frac{|C|}{\max(|R|,1)}\right|\right), & \text{otherwise},
+\end{cases}
+\end{equation}
+where $\beta_\ell\geq0$. Unlike a one-sided brevity penalty, this form treats
+equal proportional shortening and expansion symmetrically. It is a regularizer,
+not a proxy for quality, and should be calibrated by task.
+
+\section{Implementation Design}
+
+The accompanying Python package, \texttt{sais-score}, implements the metric
+with the following pipeline:
+\begin{enumerate}
+  \item Accept candidate, reference, optional curated facts, alias map, and
+  explicit constraints.
+  \item Compute document and block embeddings using a lazy
+  \texttt{sentence-transformers} adapter.
+  \item Segment blocks, calculate Equation~\ref{eq:logic}, and compute
+  document-level Meaning Mesh.
+  \item Extract facts using regular expressions and optional spaCy NER, or use
+  caller-provided fact lists; canonicalize and match them one-to-one.
+  \item Evaluate constraints, apply the length penalty, and return all
+  components plus diagnostics.
+\end{enumerate}
+The package also provides a deterministic hashing encoder for unit tests and
+offline demonstrations. It is explicitly not a substitute for a semantic model.
+
+\section{Calibration and Evaluation Protocol}
+
+The hyperparameters $(\alpha,\lambda,\beta_\ell,\beta_f)$ and constraint
+factors are task assumptions, not universal constants. They should be selected
+on a development partition with no overlap with the final evaluation data.
+
+For empirical validation, use a released human-scored dataset such as a
+reference-based WMT Metrics Shared Task set~\citep{freitag2022wmt}. For each
+segment, compute SAIS, BLEU, ROUGE-L, and BERTScore under documented
+preprocessing. Report Pearson $r$ and Spearman $\rho$ against human scores,
+with confidence intervals or bootstrap resampling where possible. Report
+language pair, dataset version, segment count, embedding model, entity
+extractor, curated-fact policy, and all hyperparameters. The included benchmark
+harness accepts local JSONL data and writes a machine-readable result report.
+
+\section{Limitations and Responsible Use}
+
+SAIS inherits embedding bias and can be affected by weak segmentation,
+incomplete references, entity extraction errors, and poor alias tables.
+Candidate-only named entities are not automatically hallucinations; they may be
+valid elaboration. Consequently, the implementation should distinguish curated
+critical facts from exploratory automatic extraction. A score must not be used
+as the sole basis for medical, legal, employment, educational, safety, or other
+high-impact judgments. Human review and task-specific error analysis remain
+necessary.
+
+\section{Conclusion}
+
+SAIS separates semantic similarity, logical order, factual precision and
+recall, explicit constraints, and length regularization in one interpretable
+metric. Its key design choice is to make fact and constraint scores
+multiplicative, which prevents high semantic similarity from concealing certain
+critical failures. The framework is falsifiable: its value depends on measured
+agreement with human judgments and transparent reporting of its calibration.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,100 @@
+{
+  "dataset": "vendor\\wmt-mqm-human-evaluation\\generalMT2022\\ende\\mqm_generalMT2022_ende.avg_seg_scores.tsv",
+  "dataset_description": "WMT22 expert MQM average segment scores",
+  "metric": "SAIS",
+  "encoder": "ollama",
+  "embedding_model": "qwen3-embedding:0.6b",
+  "reportable_as_empirical_sais": true,
+  "evaluation_scope": "deterministic_preliminary_subset",
+  "suitable_for_final_benchmark_claim": false,
+  "human_score_transform": "raw MQM score; negative error penalties, higher is better",
+  "systems": 15,
+  "segments_per_system_limit": 100,
+  "segment_level_correlation": {
+    "observations": 1500,
+    "pearson": 0.12578740647721548,
+    "spearman": 0.2037550154701626
+  },
+  "system_level_correlation": {
+    "observations": 15,
+    "pearson": 0.4330566712322391,
+    "spearman": 0.23928571428571427
+  },
+  "system_scores": {
+    "JDExploreAcademy": {
+      "segments": 100,
+      "sais_mean": 0.7123856121908075,
+      "human_quality_mean": -1.061
+    },
+    "Lan-Bridge": {
+      "segments": 100,
+      "sais_mean": 0.6960561469941653,
+      "human_quality_mean": -1.074
+    },
+    "M2M100_1.2B-B4": {
+      "segments": 100,
+      "sais_mean": 0.6440503077300822,
+      "human_quality_mean": -2.877
+    },
+    "Online-A": {
+      "segments": 100,
+      "sais_mean": 0.6813923097538269,
+      "human_quality_mean": -1.346
+    },
+    "Online-B": {
+      "segments": 100,
+      "sais_mean": 0.6962371364756995,
+      "human_quality_mean": -0.967
+    },
+    "Online-G": {
+      "segments": 100,
+      "sais_mean": 0.6822896960470438,
+      "human_quality_mean": -1.105
+    },
+    "Online-W": {
+      "segments": 100,
+      "sais_mean": 0.6830484563744289,
+      "human_quality_mean": -0.63
+    },
+    "Online-Y": {
+      "segments": 100,
+      "sais_mean": 0.6776217680962984,
+      "human_quality_mean": -1.338
+    },
+    "OpenNMT": {
+      "segments": 100,
+      "sais_mean": 0.6485459409873393,
+      "human_quality_mean": -1.514
+    },
+    "PROMT": {
+      "segments": 100,
+      "sais_mean": 0.6821040797842927,
+      "human_quality_mean": -1.493
+    },
+    "QUARTZ_TuneReranking": {
+      "segments": 100,
+      "sais_mean": 0.7020920843959377,
+      "human_quality_mean": -1.383
+    },
+    "bleu_bestmbr": {
+      "segments": 100,
+      "sais_mean": 0.7022064298662399,
+      "human_quality_mean": -1.184
+    },
+    "bleurt_bestmbr": {
+      "segments": 100,
+      "sais_mean": 0.6601841243488478,
+      "human_quality_mean": -1.067
+    },
+    "comet_bestmbr": {
+      "segments": 100,
+      "sais_mean": 0.6769453089338323,
+      "human_quality_mean": -0.763
+    },
+    "refB": {
+      "segments": 100,
+      "sais_mean": 0.6599791844594461,
+      "human_quality_mean": -0.707
+    }
+  }
+}
