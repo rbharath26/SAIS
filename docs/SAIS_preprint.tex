@@ -8,7 +8,7 @@
 \title{SAIS: Semantic Anchor \& Intent Score\\
 \large A Fact-Aware, Structure-Aware Metric for Reference-Based Evaluation of Generated Text}
 \author{Bharath Raghavan\\Independent Researcher}
-\date{October 24, 2026}
+\date{October 25, 2026}
 
 \begin{document}
 \maketitle
@@ -23,10 +23,11 @@ meaning score, idea-block sequence alignment, a fact-level $F_\beta$ score,
 an explicit constraint gate, and a symmetric length-ratio penalty. The design
 makes factual and constraint failures multiplicative rather than compensable by
 surface-level semantic similarity. We specify the metric, its implementation
-interface, diagnostics, and a reproducible protocol for validation against
-human judgments. SAIS is proposed as an evaluation framework; empirical
-correlations are intentionally not claimed until they are measured on released,
-human-scored benchmarks.
+interface, diagnostics, and a reproducible validation against expert human
+judgments. On 19,725 valid WMT22 English-to-German segments, a local Qwen
+embedding configuration achieved stronger system-level correlations than BLEU
+and ROUGE-L, but weaker segment-level correlations. The result is evidence of
+promise at system level, not a claim of overall superiority.
 \end{abstract}
 
 \section{Introduction}
@@ -167,8 +168,8 @@ with the following pipeline:
 \begin{enumerate}
   \item Accept candidate, reference, optional curated facts, alias map, and
   explicit constraints.
-  \item Compute document and block embeddings using a lazy
-  \texttt{sentence-transformers} adapter.
+  \item Compute document and block embeddings using either a lazy
+  \texttt{sentence-transformers} adapter or a local Ollama embedding adapter.
   \item Segment blocks, calculate Equation~\ref{eq:logic}, and compute
   document-level Meaning Mesh.
   \item Extract facts using regular expressions and optional spaCy NER, or use
@@ -194,6 +195,54 @@ language pair, dataset version, segment count, embedding model, entity
 extractor, curated-fact policy, and all hyperparameters. The included benchmark
 harness accepts local JSONL data and writes a machine-readable result report.
 
+\section{Empirical Evaluation}
+
+\subsection{Setup}
+
+We evaluated SAIS on the WMT22 English-to-German expert MQM release. After
+excluding rows without a usable hypothesis, reference, or human score, the
+evaluation contained 19,725 segments from 15 systems. Human MQM values are
+negative error penalties; higher values (closer to zero) indicate better
+quality. SAIS used the local \texttt{qwen3-embedding:0.6b} Ollama model,
+automatic fact extraction, and the default implementation parameters
+$(\alpha,\lambda,\beta_\ell,\beta_f)=(0.6,3.0,0.2,1.0)$. No curated facts or
+task-specific constraints were supplied.
+
+BLEU and ROUGE-L were computed on the same rows. Table~\ref{tab:results}
+reports Pearson and Spearman correlation against human MQM scores at the
+segment level and after averaging scores by system. BERTScore is not reported:
+the evaluation environment could not establish a TLS connection to obtain its
+contextual model. No significance test or confidence interval is claimed.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Metric & Seg.\ Pearson & Seg.\ Spearman & Sys.\ Pearson & Sys.\ Spearman \\
+\midrule
+SAIS & 0.075 & 0.189 & \textbf{0.727} & \textbf{0.539} \\
+BLEU & 0.199 & 0.228 & 0.632 & 0.457 \\
+ROUGE-L & \textbf{0.227} & \textbf{0.258} & 0.712 & 0.500 \\
+\bottomrule
+\end{tabular}
+\caption{Correlation with WMT22 English-to-German expert MQM scores over
+19,725 valid segments and 15 systems.}
+\label{tab:results}
+\end{table}
+
+\subsection{Interpretation}
+
+SAIS has the strongest observed system-level correlations in this experiment,
+but the margin over ROUGE-L is small and based on only 15 systems. At segment
+level, both lexical baselines correlate more strongly with human MQM than
+SAIS. Therefore, these results do not establish SAIS as a generally superior
+translation metric. They suggest that the current implementation may capture
+some system-level quality signal while requiring calibration and task-specific
+fact definitions for fine-grained judgments. Translation also underexercises
+SAIS's intended fact and explicit-constraint components; factual summarization
+and constrained question answering are necessary follow-up evaluations.
+
 \section{Limitations and Responsible Use}
 
 SAIS inherits embedding bias and can be affected by weak segmentation,
@@ -203,7 +252,9 @@ valid elaboration. Consequently, the implementation should distinguish curated
 critical facts from exploratory automatic extraction. A score must not be used
 as the sole basis for medical, legal, employment, educational, safety, or other
 high-impact judgments. Human review and task-specific error analysis remain
-necessary.
+necessary. The WMT22 experiment omits BERTScore and confidence intervals, uses
+automatic rather than curated facts, and evaluates only one language direction;
+it is not sufficient to support broad performance claims.
 
 \section{Conclusion}
 
@@ -213,6 +264,10 @@ metric. Its key design choice is to make fact and constraint scores
 multiplicative, which prevents high semantic similarity from concealing certain
 critical failures. The framework is falsifiable: its value depends on measured
 agreement with human judgments and transparent reporting of its calibration.
+The initial WMT22 result is mixed: system-level alignment is promising, while
+segment-level alignment is not competitive with the lexical baselines tested.
+Future work must calibrate the metric and validate it on fact-sensitive tasks
+before making stronger claims.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
